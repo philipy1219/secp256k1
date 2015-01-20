@@ -861,7 +861,9 @@ void ge_equals_gej(const secp256k1_ge_t *a, const secp256k1_gej_t *b) {
     secp256k1_fe_t u1, u2, s1, s2;
     CHECK(a->infinity == b->infinity);
     if (a->infinity)
+    {
         return;
+    }
     /* Check a.x * b.z^2 == b.x && a.y * b.z^3 == b.y, to avoid inverses. */
     secp256k1_fe_sqr(&z2s, &b->z);
     secp256k1_fe_mul(&u1, &a->x, &z2s);

@@ -237,7 +237,9 @@ static int secp256k1_fe_normalizes_to_zero_var(secp256k1_fe_t *r) {
 
     /* Fast return path should catch the majority of cases */
     if ((z0 != 0UL) & (z1 != 0x3FFFFFFUL))
+    {
         return 0;
+    }
 
     t1 = r->n[1];
     t2 = r->n[2];

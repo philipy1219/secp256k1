@@ -178,7 +178,9 @@ static int secp256k1_eckey_pubkey_tweak_mul(secp256k1_ge_t *key, const secp256k1
     secp256k1_scalar_t zero;
     secp256k1_gej_t pt;
     if (secp256k1_scalar_is_zero(tweak))
+    {
         return 0;
+    }
 
     secp256k1_scalar_set_int(&zero, 0);
     secp256k1_gej_set_ge(&pt, key);
