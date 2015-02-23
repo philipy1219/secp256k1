@@ -40,6 +40,26 @@ extern "C" {
 #  define SECP256K1_ARG_NONNULL(_x)
 # endif
 
+# if defined _MSC_VER || defined __CYGWIN__
+#  define SECP256K1_HELPER_DLL_IMPORT __declspec(dllimport)
+#  define SECP256K1_HELPER_DLL_EXPORT __declspec(dllexport)
+# else
+#  if __GNUC__ >= 4
+#   define SECP256K1_HELPER_DLL_IMPORT __attribute__ ((visibility ("default")))
+#   define SECP256K1_HELPER_DLL_EXPORT __attribute__ ((visibility ("default")))
+#  else
+#   define SECP256K1_HELPER_DLL_IMPORT
+#   define SECP256K1_HELPER_DLL_EXPORT
+#  endif
+# endif
+
+# if defined SECP256K1_STATIC
+#  define SECP256K1_API
+# elif defined SECP256K1_DLL
+#  define SECP256K1_API SECP256K1_HELPER_DLL_EXPORT
+# else
+#  define SECP256K1_API SECP256K1_HELPER_DLL_IMPORT
+# endif
 
 /** Flags to pass to secp256k1_start. */
 # define SECP256K1_START_VERIFY (1 << 0)
@@ -50,11 +70,13 @@ extern "C" {
  *  It cannot run in parallel with any other functions, but once
  *  secp256k1_start() returns, all other functions are thread-safe.
  */
+SECP256K1_API
 void secp256k1_start(unsigned int flags);
 
 /** Free all memory associated with this library. After this, no
  *  functions can be called anymore, except secp256k1_start()
  */
+SECP256K1_API
 void secp256k1_stop(void);
 
 /** Verify an ECDSA signature.
@@ -69,6 +91,7 @@ void secp256k1_stop(void);
  *           pubkeylen: the length of pubkey
  * Requires starting using SECP256K1_START_VERIFY.
  */
+SECP256K1_API
 SECP256K1_WARN_UNUSED_RESULT int secp256k1_ecdsa_verify(
   const unsigned char *msg32,
   const unsigned char *sig,
@@ -98,9 +121,11 @@ typedef int (*secp256k1_nonce_function_t)(
 );
 
 /** An implementation of RFC6979 (using HMAC-SHA256) as nonce generation function. */
+SECP256K1_API
 extern const secp256k1_nonce_function_t secp256k1_nonce_function_rfc6979;
 
 /** A default safe nonce generation function (currently equal to secp256k1_nonce_function_rfc6979). */
+SECP256K1_API
 extern const secp256k1_nonce_function_t secp256k1_nonce_function_default;
 
 
@@ -144,6 +169,7 @@ extern const secp256k1_nonce_function_t secp256k1_nonce_function_default;
  * schemes will also accept various non-unique encodings, so care should
  * be taken when this property is required for an application.
  */
+SECP256K1_API
 int secp256k1_ecdsa_sign(
   const unsigned char *msg32,
   unsigned char *sig,
@@ -165,6 +191,7 @@ int secp256k1_ecdsa_sign(
  *           recid:  pointer to an int, which will be updated to contain the recovery id (can be NULL)
  * Requires starting using SECP256K1_START_SIGN.
  */
+SECP256K1_API
 int secp256k1_ecdsa_sign_compact(
   const unsigned char *msg32,
   unsigned char *sig64,
@@ -185,6 +212,7 @@ int secp256k1_ecdsa_sign_compact(
  *           pubkeylen:  pointer to an int that will contain the pubkey length (cannot be NULL)
  * Requires starting using SECP256K1_START_VERIFY.
  */
+SECP256K1_API
 SECP256K1_WARN_UNUSED_RESULT int secp256k1_ecdsa_recover_compact(
   const unsigned char *msg32,
   const unsigned char *sig64,
@@ -199,6 +227,7 @@ SECP256K1_WARN_UNUSED_RESULT int secp256k1_ecdsa_recover_compact(
  *           0: secret key is invalid
  *  In:      seckey: pointer to a 32-byte secret key (cannot be NULL)
  */
+SECP256K1_API
 SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_seckey_verify(const unsigned char *seckey) SECP256K1_ARG_NONNULL(1);
 
 /** Just validate a public key.
@@ -207,6 +236,7 @@ SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_seckey_verify(const unsigned char 
  *  In:      pubkey:    pointer to a 33-byte or 65-byte public key (cannot be NULL).
  *           pubkeylen: length of pubkey
  */
+SECP256K1_API
 SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_pubkey_verify(const unsigned char *pubkey, int pubkeylen) SECP256K1_ARG_NONNULL(1);
 
 /** Compute the public key for a secret key.
@@ -220,6 +250,7 @@ SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_pubkey_verify(const unsigned char 
  *           0: secret was invalid, try again.
  * Requires starting using SECP256K1_START_SIGN.
  */
+SECP256K1_API
 SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_pubkey_create(
   unsigned char *pubkey,
   int *pubkeylen,
@@ -235,12 +266,14 @@ SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_pubkey_create(
  * Returns: 0 if the passed public key was invalid, 1 otherwise. If 1 is returned, the
             pubkey is replaced with its decompressed version.
  */
+SECP256K1_API
 SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_pubkey_decompress(
   unsigned char *pubkey,
   int *pubkeylen
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2);
 
 /** Export a private key in DER format. */
+SECP256K1_API
 SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_privkey_export(
   const unsigned char *seckey,
   unsigned char *privkey,
@@ -249,6 +282,7 @@ SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_privkey_export(
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3);
 
 /** Import a private key in DER format. */
+SECP256K1_API
 SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_privkey_import(
   unsigned char *seckey,
   const unsigned char *privkey,
@@ -256,6 +290,7 @@ SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_privkey_import(
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2);
 
 /** Tweak a private key by adding tweak to it. */
+SECP256K1_API
 SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_privkey_tweak_add(
   unsigned char *seckey,
   const unsigned char *tweak
@@ -264,6 +299,7 @@ SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_privkey_tweak_add(
 /** Tweak a public key by adding tweak times the generator to it.
  * Requires starting with SECP256K1_START_VERIFY.
  */
+SECP256K1_API
 SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_pubkey_tweak_add(
   unsigned char *pubkey,
   int pubkeylen,
@@ -271,6 +307,7 @@ SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_pubkey_tweak_add(
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(3);
 
 /** Tweak a private key by multiplying it with tweak. */
+SECP256K1_API
 SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_privkey_tweak_mul(
   unsigned char *seckey,
   const unsigned char *tweak
@@ -279,6 +316,7 @@ SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_privkey_tweak_mul(
 /** Tweak a public key by multiplying it with tweak.
  * Requires starting with SECP256K1_START_VERIFY.
  */
+SECP256K1_API
 SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_pubkey_tweak_mul(
   unsigned char *pubkey,
   int pubkeylen,
